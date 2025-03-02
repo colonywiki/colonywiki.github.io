@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colony Wiki - Units & Structures</title>
+    <style>
+        @font-face {
+            font-family: 'SpaceFont';
+            src: url('https://fonts.cdnfonts.com/css/helvetica-neue-9') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141c33;
+            --accent-primary: #4287f5;
+            --accent-secondary: #32f9e5;
+            --text-primary: #e1e8ff;
+            --text-secondary: #a3aed0;
+            --border-color: #263566;
+            --resource-energy: #89FDFC;
+            --resource-money: #CBFF65;
+            --resource-manpower: #FFECA2;
+            --resource-influence: #FFBBEB;
+            --category-infantry: #FF7676;
+            --category-vehicle: #76A5FF;
+            --category-aircraft: #B576FF;
+            --category-deployment: #76FFB5;
+            --category-resource: #FFD876;
+            --category-weapons: #FF76C1;
+            --category-hybrid: #76FFFA;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SpaceFont', 'Helvetica Neue', 'Silom', '_sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(50, 249, 229, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+            50% { text-shadow: 0 0 15px rgba(50, 249, 229, 0.8), 0 0 30px rgba(50, 249, 229, 0.4); }
+            100% { text-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 25% 15%, rgba(66, 135, 245, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 75% 85%, rgba(50, 249, 229, 0.1) 0%, transparent 25%);
+            overflow-x: hidden;
+        }
+        
+        /* Stars Background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .wiki-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 100px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .navbar-brand {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--accent-secondary);
+            padding: 15px 0;
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.3);
+            letter-spacing: 2px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            text-shadow: 0 0 15px rgba(50, 249, 229, 0.6);
+            transform: scale(1.05);
+        }
+        
+        .navbar-menu {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            max-width: 70%;
+            scrollbar-width: none;
+        }
+        
+        .navbar-menu::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .navbar-item {
+            padding: 15px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        
+        .navbar-item:hover, .navbar-item.active {
+            color: var(--accent-secondary);
+            border-bottom: 2px solid var(--accent-secondary);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 30px 0;
+        }
+        
+        .wiki-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--accent-secondary);
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.5);
+            text-align: center;
+            padding: 20px 0;
+            animation: glow 3s infinite;
+        }
+        
+        .filter-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .sort-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .filter-btn:hover {
+            background-color: rgba(66, 135, 245, 0.2);
+        }
+
+        .filter-btn.active {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .filter-btn.category-infantry.active {
+            background-color: var(--category-infantry);
+            border-color: var(--category-infantry);
+        }
+
+        .filter-btn.category-vehicle.active {
+            background-color: var(--category-vehicle);
+            border-color: var(--category-vehicle);
+        }
+
+        .filter-btn.category-aircraft.active {
+            background-color: var(--category-aircraft);
+            border-color: var(--category-aircraft);
+        }
+
+        .filter-btn.category-deployment.active {
+            background-color: var(--category-deployment);
+            border-color: var(--category-deployment);
+        }
+
+        .filter-btn.category-resource.active {
+            background-color: var(--category-resource);
+            border-color: var(--category-resource);
+        }
+
+        .filter-btn.category-weapons.active {
+            background-color: var(--category-weapons);
+            border-color: var(--category-weapons);
+        }
+
+        .filter-btn.category-hybrid.active {
+            background-color: var(--category-hybrid);
+            border-color: var(--category-hybrid);
+        }
+
+        .sort-select {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 6px 10px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a3aed0' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+        
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+        
+        .units-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+        
+        .unit-card {
+            background-color: var(--bg-secondary);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .unit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(66, 135, 245, 0.3);
+            border-color: var(--accent-secondary);
+            animation: pulse 2s infinite;
+        }
+        
+        .unit-image {
+            width: 100%;
+            height: 180px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: rgba(10, 14, 26, 0.6);
+            transition: all 0.3s ease;
+        }
+        
+        .unit-card:hover .unit-image {
+            transform: scale(1.05);
+        }
+        
+        .unit-info {
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .unit-name {
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .unit-card:hover .unit-name {
+            color: var(--accent-secondary);
+        }
+        
+        .unit-type {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .section-title {
+            color: var(--accent-primary);
+            margin: 40px 0 20px;
+            font-size: 1.8rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            position: relative;
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .category-legend {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px 0;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+        
+        @media (max-width: 767px) {
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+            
+            .navbar-item {
+                padding: 15px 8px;
+                font-size: 0.9rem;
+            }
+            
+            .wiki-title {
+                font-size: 2rem;
+            }
+            
+            .units-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 15px;
+            }
+            
+            .unit-image {
+                height: 130px;
+            }
+            
+            .unit-name {
+                font-size: 1rem;
+            }
+            
+            .unit-type {
+                font-size: 0.8rem;
+            }
+
+            .filter-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .sort-group {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .navbar-menu {
+                max-width: 65%;
+            }
+
+            .filter-btn {
+                font-size: 0.75rem;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <nav class="navbar" id="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="navbar-brand">COLONY WIKI</a>
+            <div class="navbar-menu">
+                <a href="#units" class="navbar-item active">Units</a>
+                <a href="#structures" class="navbar-item">Structures</a>
+                <a href="#governments" class="navbar-item">Governments</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="wiki-container">
+        
+        <section id="units">
+            <div class="section-header">
+                <h2 class="section-title">Units</h2>
+            </div>
+
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn category-infantry" data-filter="Infantry">Infantry</button>
+                    <button class="filter-btn category-vehicle" data-filter="Armored Vehicle">Armored Vehicles</button>
+                    <button class="filter-btn category-aircraft" data-filter="Aircraft">Aircraft</button>
+                </div>
+                <div class="sort-group">
+                    <label for="unit-sort">Sort by:</label>
+                    <select id="unit-sort" class="sort-select">
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                        <option value="type-asc">Type (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="category-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--category-infantry);"></div>
+                    <span>Infantry</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--category-vehicle);"></div>
+                    <span>Armored Vehicle</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--category-aircraft);"></div>
+                    <span>Aircraft</span>
+                </div>
+            </div>
+
+            <div class="units-grid" id="units-grid">
+                <a href="a25roman.html" class="unit-card" data-type="Infantry" data-name="A25-Roman">
+                    <div class="unit-image" style="background-image: url('images/a25roman.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">A25-Roman</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="a26legionnaire.html" class="unit-card" data-type="Infantry" data-name="A26-Legionnaire">
+                    <div class="unit-image" style="background-image: url('images/a26legionnaire.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">A26-Legionnaire</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="a27pride.html" class="unit-card" data-type="Infantry" data-name="A27-Pride">
+                    <div class="unit-image" style="background-image: url('images/a27pride.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">A27-Pride</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="a28gladiator.html" class="unit-card" data-type="Infantry" data-name="A28-Gladiator">
+                    <div class="unit-image" style="background-image: url('images/a28gladiator.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">A28-Gladiator</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="marine.html" class="unit-card" data-type="Infantry" data-name="Marine">
+                    <div class="unit-image" style="background-image: url('images/marine.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Marine</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="missilemarine.html" class="unit-card" data-type="Infantry" data-name="Missile Marine">
+                    <div class="unit-image" style="background-image: url('images/missilemarine.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Missile Marine</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="smarine.html" class="unit-card" data-type="Infantry" data-name="S-Marine">
+                    <div class="unit-image" style="background-image: url('images/smarine.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">S-Marine</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="sniper.html" class="unit-card" data-type="Infantry" data-name="Sniper">
+                    <div class="unit-image" style="background-image: url('images/sniper.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Sniper</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="farsniper.html" class="unit-card" data-type="Infantry" data-name="Far Sniper">
+                    <div class="unit-image" style="background-image: url('images/farsniper.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Far Sniper</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="meditec.html" class="unit-card" data-type="Infantry" data-name="Meditec">
+                    <div class="unit-image" style="background-image: url('images/meditec.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Meditec</h3>
+                        <div class="unit-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="chronitetank.html" class="unit-card" data-type="Armored Vehicle" data-name="Chronite Tank">
+                    <div class="unit-image" style="background-image: url('images/chronitetank.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Chronite Tank</h3>
+                        <div class="unit-type">Armored Vehicle</div>
+                    </div>
+                </a>
+                
+                <a href="hovertank.html" class="unit-card" data-type="Armored Vehicle" data-name="Hover Tank">
+                    <div class="unit-image" style="background-image: url('images/hovertank.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Hover Tank</h3>
+                        <div class="unit-type">Armored Vehicle</div>
+                    </div>
+                </a>
+                
+                <a href="sphinx.html" class="unit-card" data-type="Armored Vehicle" data-name="Sphinx">
+                    <div class="unit-image" style="background-image: url('images/sphinx.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Sphinx</h3>
+                        <div class="unit-type">Armored Vehicle</div>
+                    </div>
+                </a>
+                
+                <a href="groditz.html" class="unit-card" data-type="Armored Vehicle" data-name="Gröditz">
+                    <div class="unit-image" style="background-image: url('images/groditz.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Gröditz</h3>
+                        <div class="unit-type">Armored Vehicle</div>
+                    </div>
+                </a>
+                
+                <a href="modgroditz.html" class="unit-card" data-type="Armored Vehicle" data-name="Mod. Gröditz">
+                    <div class="unit-image" style="background-image: url('images/modgroditz.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Mod. Gröditz</h3>
+                        <div class="unit-type">Armored Vehicle</div>
+                    </div>
+                </a>
+                
+                <a href="sakataspider.html" class="unit-card" data-type="Armored Vehicle" data-name="Sakata Spider">
+                    <div class="unit-image" style="background-image: url('images/sakataspider.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Sakata Spider</h3>
+                        <div class="unit-type">Armored Vehicle</div>
+                    </div>
+                </a>
+                
+                <a href="sakatamkii.html" class="unit-card" data-type="Armored Vehicle" data-name="Sakata Mk-II">
+                    <div class="unit-image" style="background-image: url('images/sakatamkii.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Sakata Mk-II</h3>
+                        <div class="unit-type">Armored Vehicle</div>
+                    </div>
+                </a>
+                
+                <a href="modsakata.html" class="unit-card" data-type="Armored Vehicle" data-name="Mod. Sakata">
+                    <div class="unit-image" style="background-image: url('images/modsakata.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Mod. Sakata</h3>
+                        <div class="unit-type">Armored Vehicle</div>
+                    </div>
+                </a>
+                
+                <a href="jotunn.html" class="unit-card" data-type="Armored Vehicle" data-name="Jötunn">
+                    <div class="unit-image" style="background-image: url('images/jotunn.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Jötunn</h3>
+                        <div class="unit-type">Armored Vehicle</div>
+                    </div>
+                </a>
+                
+                <a href="angel.html" class="unit-card" data-type="Aircraft" data-name="Angel">
+                    <div class="unit-image" style="background-image: url('images/angel.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Angel</h3>
+                        <div class="unit-type">Aircraft</div>
+                    </div>
+                </a>
+                
+                <a href="scout.html" class="unit-card" data-type="Aircraft" data-name="Scout">
+                    <div class="unit-image" style="background-image: url('images/scout.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Scout</h3>
+                        <div class="unit-type">Aircraft</div>
+                    </div>
+                </a>
+                
+                <a href="phantom.html" class="unit-card" data-type="Aircraft" data-name="Phantom">
+                    <div class="unit-image" style="background-image: url('images/phantom.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Phantom</h3>
+                        <div class="unit-type">Aircraft</div>
+                    </div>
+                </a>
+                
+                <a href="modphantom.html" class="unit-card" data-type="Aircraft" data-name="Mod. Phantom">
+                    <div class="unit-image" style="background-image: url('images/modphantom.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Mod. Phantom</h3>
+                        <div class="unit-type">Aircraft</div>
+                    </div>
+                </a>
+                
+                <a href="blackqueen.html" class="unit-card" data-type="Aircraft" data-name="Black Queen">
+                    <div class="unit-image" style="background-image: url('images/blackqueen.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Black Queen</h3>
+                        <div class="unit-type">Aircraft</div>
+                    </div>
+                </a>
+                
+                <a href="saint.html" class="unit-card" data-type="Aircraft" data-name="Saint">
+                    <div class="unit-image" style="background-image: url('images/saint.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Saint</h3>
+                        <div class="unit-type">Aircraft</div>
+                    </div>
+                </a>
+                
+                <a href="mirage.html" class="unit-card" data-type="Aircraft" data-name="Mirage">
+                    <div class="unit-image" style="background-image: url('images/mirage.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Mirage</h3>
+                        <div class="unit-type">Aircraft</div>
+                    </div>
+                </a>
+                
+                <a href="shrike.html" class="unit-card" data-type="Aircraft" data-name="Shrike">
+                    <div class="unit-image" style="background-image: url('images/shrike.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Shrike</h3>
+                        <div class="unit-type">Aircraft</div>
+                    </div>
+                </a>
+                
+                <a href="eidolon.html" class="unit-card" data-type="Aircraft" data-name="Eidolon">
+                    <div class="unit-image" style="background-image: url('images/eidolon.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Eidolon</h3>
+                        <div class="unit-type">Aircraft</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+        
+        <section id="structures">
+            <div class="section-header">
+                <h2 class="section-title">Structures</h2>
+            </div>
+
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn category-deployment" data-filter="Unit Deployment Structure">Deployment</button>
+                    <button class="filter-btn category-resource" data-filter="Resource Structure">Resource</button>
+                    <button class="filter-btn category-weapons" data-filter="Weapons Structure">Weapons</button>
+                    <button class="filter-btn category-hybrid" data-filter="Hybrid Structure">Hybrid</button>
+                </div>
+                <div class="sort-group">
+                    <label for="structure-sort">Sort by:</label>
+                    <select id="structure-sort" class="sort-select">
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                        <option value="type-asc">Type (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="category-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--category-deployment);"></div>
+                    <span>Deployment</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--category-resource);"></div>
+                    <span>Resource</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--category-weapons);"></div>
+                    <span>Weapons</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--category-hybrid);"></div>
+                    <span>Hybrid</span>
+                </div>
+            </div>
+
+            <div class="units-grid" id="structures-grid">
+                <a href="outpost.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Outpost">
+                    <div class="unit-image" style="background-image: url('images/outpost.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Outpost</h3>
+                        <div class="unit-type">Unit Deployment Structure</div>
+                    </div>
+                </a>
+            
+                <a href="barracks.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Barracks">
+                    <div class="unit-image" style="background-image: url('images/barracks.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Barracks</h3>
+                        <div class="unit-type">Unit Deployment Structure</div>
+                    </div>
+                </a>
+                
+                <a href="arsenal.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Arsenal">
+                    <div class="unit-image" style="background-image: url('images/arsenal.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Arsenal</h3>
+                        <div class="unit-type">Unit Deployment Structure</div>
+                    </div>
+                </a>
+            
+                <a href="forge.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Forge">
+                    <div class="unit-image" style="background-image: url('images/forge.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Forge</h3>
+                        <div class="unit-type">Unit Deployment Structure</div>
+                    </div>
+                </a>
+                
+                <a href="manufactory.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Manufactory">
+                    <div class="unit-image" style="background-image: url('images/manufactory.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Manufactory</h3>
+                        <div class="unit-type">Unit Deployment Structure</div>
+                    </div>
+                </a>
+                
+                <a href="mechanicsterminal.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Mechanics Terminal">
+                    <div class="unit-image" style="background-image: url('images/mechanicsterminal.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Mechanics Terminal</h3>
+                        <div class="unit-type">Unit Deployment Structure</div>
+                    </div>
+                </a>
+                
+                <a href="hospital.html" class="unit-card" data-type="Hybrid Structure" data-name="Hospital">
+                    <div class="unit-image" style="background-image: url('images/hospital.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Hospital</h3>
+                        <div class="unit-type">Hybrid Structure</div>
+                    </div>
+                </a>
+                
+                <a href="warsanctum.html" class="unit-card" data-type="Hybrid Structure" data-name="War Sanctum">
+                    <div class="unit-image" style="background-image: url('images/warsanctum.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">War Sanctum</h3>
+                        <div class="unit-type">Hybrid Structure</div>
+                    </div>
+                </a>
+                
+                <a href="bank.html" class="unit-card" data-type="Resource Structure" data-name="Bank">
+                    <div class="unit-image" style="background-image: url('images/bank.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Bank</h3>
+                        <div class="unit-type">Resource Structure</div>
+                    </div>
+                </a>
+                
+                <a href="treasury.html" class="unit-card" data-type="Resource Structure" data-name="Treasury">
+                    <div class="unit-image" style="background-image: url('images/treasury.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Treasury</h3>
+                        <div class="unit-type">Resource Structure</div>
+                    </div>
+                </a>
+                
+                <a href="generator.html" class="unit-card" data-type="Resource Structure" data-name="Generator">
+                    <div class="unit-image" style="background-image: url('images/generator.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Generator</h3>
+                        <div class="unit-type">Resource Structure</div>
+                    </div>
+                </a>
+                
+                <a href="solargrid.html" class="unit-card" data-type="Resource Structure" data-name="Solar Grid">
+                    <div class="unit-image" style="background-image: url('images/solargrid.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Solar Grid</h3>
+                        <div class="unit-type">Resource Structure</div>
+                    </div>
+                </a>
+                
+                <a href="armory.html" class="unit-card" data-type="Resource Structure" data-name="Armory">
+                    <div class="unit-image" style="background-image: url('images/armory.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Armory</h3>
+                        <div class="unit-type">Resource Structure</div>
+                    </div>
+                </a>
+                
+                <a href="specialoperations.html" class="unit-card" data-type="Weapons Structure" data-name="Special Operations">
+                    <div class="unit-image" style="background-image: url('images/specialoperations.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Special Operations</h3>
+                        <div class="unit-type">Weapons Structure</div>
+                    </div>
+                </a>
+            
+                <a href="precinct.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Precinct">
+                    <div class="unit-image" style="background-image: url('images/precinct.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Precinct</h3>
+                        <div class="unit-type">Unit Deployment Structure</div>
+                    </div>
+                </a>
+                
+                <a href="terminal.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Terminal">
+                    <div class="unit-image" style="background-image: url('images/terminal.png');"></div>
+                    <div class="unit-info">
+                        <h3 class="unit-name">Terminal</h3>
+                        <div class="unit-type">Unit Deployment Structure</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create stars background
+            function createStars() {
+                const starsContainer = document.getElementById('stars');
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                
+                // Clear existing stars
+                starsContainer.innerHTML = '';
+                
+                // Create stars with different sizes and animations
+                for (let i = 0; i < 200; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    
+                    // Random position
+                    const left = Math.random() * screenWidth;
+                    const top = Math.random() * screenHeight;
+                    
+                    // Random size
+                    const size = Math.random() * 2.5;
+                    
+                    // Random opacity and animation delay
+                    const opacity = Math.random() * 0.7 + 0.3;
+                    const animationDuration = Math.random() * 3 + 2;
+                    const animationDelay = Math.random() * 5;
+                    
+                    // Apply styles
+                    star.style.left = `${left}px`;
+                    star.style.top = `${top}px`;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    star.style.opacity = opacity;
+                    star.style.animation = `twinkle ${animationDuration}s infinite ${animationDelay}s`;
+                    
+                    starsContainer.appendChild(star);
+                }
+            }
+            
+            // Handle navbar active state on scroll
+            const sections = document.querySelectorAll('section');
+            const navItems = document.querySelectorAll('.navbar-item');
+            
+            function setActiveNavItem() {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= (sectionTop - 150)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('href') === `#${current}`) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+            
+            // Filter and sort functions
+            function applyFilter(container, filterValue) {
+                const items = container.querySelectorAll('.unit-card');
+                let hasVisibleItems = false;
+                
+                items.forEach(item => {
+                    if (filterValue === 'all' || item.dataset.type === filterValue) {
+                        item.style.display = 'block';
+                        hasVisibleItems = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // Show "no results" message if needed
+                const existingNoResults = container.querySelector('.no-results');
+                if (existingNoResults) {
+                    container.removeChild(existingNoResults);
+                }
+                
+                if (!hasVisibleItems) {
+                    const noResults = document.createElement('div');
+                    noResults.className = 'no-results';
+                    noResults.textContent = 'No items match your filter criteria.';
+                    container.appendChild(noResults);
+                }
+            }
+            
+            function sortItems(container, sortValue) {
+                const items = Array.from(container.querySelectorAll('.unit-card'));
+                
+                if (sortValue === 'name-asc') {
+                    items.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
+                } else if (sortValue === 'name-desc') {
+                    items.sort((a, b) => b.dataset.name.localeCompare(a.dataset.name));
+                } else if (sortValue === 'type-asc') {
+                    items.sort((a, b) => a.dataset.type.localeCompare(b.dataset.type));
+                }
+                
+                // Remove all items from the container
+                items.forEach(item => {
+                    container.removeChild(item);
+                });
+                
+                // Add sorted items back
+                items.forEach(item => {
+                    container.appendChild(item);
+                });
+            }
+            
+            // Set up filter buttons for units
+            const unitFilterButtons = document.querySelectorAll('#units .filter-btn');
+            const unitsGrid = document.getElementById('units-grid');
+            let currentUnitFilter = 'all';
+            
+            unitFilterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    unitFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentUnitFilter = button.getAttribute('data-filter');
+                    applyFilter(unitsGrid, currentUnitFilter);
+                });
+            });
+            
+            // Set up filter buttons for structures
+            const structureFilterButtons = document.querySelectorAll('#structures .filter-btn');
+            const structuresGrid = document.getElementById('structures-grid');
+            let currentStructureFilter = 'all';
+            
+            structureFilterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    structureFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentStructureFilter = button.getAttribute('data-filter');
+                    applyFilter(structuresGrid, currentStructureFilter);
+                });
+            });
+            
+            // Set up sorting for units
+            const unitSortSelect = document.getElementById('unit-sort');
+            unitSortSelect.addEventListener('change', () => {
+                sortItems(unitsGrid, unitSortSelect.value);
+            });
+            
+            // Set up sorting for structures
+            const structureSortSelect = document.getElementById('structure-sort');
+            structureSortSelect.addEventListener('change', () => {
+                sortItems(structuresGrid, structureSortSelect.value);
+            });
+            
+            // Initialize everything
+            createStars();
+            setActiveNavItem();
+            
+            // Apply initial sorting
+            sortItems(unitsGrid, 'name-asc');
+            sortItems(structuresGrid, 'name-asc');
+            
+            // Set up event listeners
+            window.addEventListener('scroll', setActiveNavItem);
+            window.addEventListener('resize', createStars);
+        });
+    </script>
+</body>
+</html>

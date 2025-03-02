@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colony Wiki - Jötunn</title>
+    <style>
+        @font-face {
+            font-family: 'SpaceFont';
+            src: url('https://fonts.cdnfonts.com/css/helvetica-neue-9') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141c33;
+            --accent-primary: #4287f5;
+            --accent-secondary: #32f9e5;
+            --text-primary: #e1e8ff;
+            --text-secondary: #a3aed0;
+            --border-color: #263566;
+            --resource-energy: #89FDFC;
+            --resource-money: #CBFF65;
+            --resource-manpower: #FFECA2;
+            --resource-influence: #FFBBEB;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SpaceFont', 'Helvetica Neue', 'Silom', '_sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(50, 249, 229, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+            50% { text-shadow: 0 0 15px rgba(50, 249, 229, 0.8), 0 0 30px rgba(50, 249, 229, 0.4); }
+            100% { text-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 25% 15%, rgba(66, 135, 245, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 75% 85%, rgba(50, 249, 229, 0.1) 0%, transparent 25%);
+            overflow-x: hidden;
+        }
+        
+        /* Stars Background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .wiki-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 100px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .navbar-brand {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--accent-secondary);
+            padding: 15px 0;
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.3);
+            letter-spacing: 2px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            text-shadow: 0 0 15px rgba(50, 249, 229, 0.6);
+            transform: scale(1.05);
+        }
+        
+        .navbar-menu {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            max-width: 70%;
+            scrollbar-width: none;
+        }
+        
+        .navbar-menu::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .navbar-item {
+            padding: 15px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        
+        .navbar-item:hover, .navbar-item.active {
+            color: var(--accent-secondary);
+            border-bottom: 2px solid var(--accent-secondary);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 30px 0;
+        }
+        
+        .wiki-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--accent-secondary);
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.5);
+        }
+        
+        .wiki-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .unit-image-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 20px rgba(66, 135, 245, 0.2);
+        }
+        
+        .unit-image {
+            width: 100%;
+            height: 100%;
+            background: url('images/jotunn.png') center center no-repeat;
+            background-size: contain;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        .unit-name {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 2rem;
+            color: var(--accent-secondary);
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.7);
+            animation: glow 3s infinite;
+        }
+        
+        .wiki-section {
+            background-color: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            scroll-margin-top: 90px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .wiki-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            z-index: 0;
+        }
+        
+        .section-title {
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            position: relative;
+            display: inline-block;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+        }
+        
+        .wiki-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background-color: rgba(20, 28, 51, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .stat-name {
+            color: var(--accent-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+        }
+        
+        .weapon-container, .armor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .weapon-card, .armor-card {
+            background-color: rgba(20, 28, 51, 0.7);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .weapon-card:hover, .armor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-secondary);
+        }
+        
+        .weapon-card::before, .armor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
+        }
+        
+        .weapon-name, .armor-name {
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            padding-left: 10px;
+            font-size: 1.2rem;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .weapon-stats, .armor-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding-left: 10px;
+        }
+        
+        .weapon-stat, .armor-stat {
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(10, 14, 26, 0.4);
+            padding: 8px;
+            border-radius: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .weapon-stat:hover, .armor-stat:hover {
+            background-color: rgba(10, 14, 26, 0.6);
+        }
+        
+        .weapon-stat-name, .armor-stat-name {
+            color: var(--accent-secondary);
+            font-size: 0.8rem;
+            margin-bottom: 3px;
+        }
+        
+        .strategies-list {
+            list-style-type: none;
+        }
+        
+        .strategy-item {
+            margin-bottom: 18px;
+            padding: 18px;
+            background-color: rgba(20, 28, 51, 0.7);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .strategy-item:hover {
+            border-color: var(--accent-secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.3);
+        }
+        
+        .strategy-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
+            opacity: 0.7;
+        }
+        
+        .strategy-title {
+            color: var(--accent-primary);
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+            position: relative;
+            letter-spacing: 0.5px;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .tag {
+            background-color: rgba(66, 135, 245, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--accent-primary);
+        }
+        
+        .cost-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 18px;
+            padding: 5px;
+        }
+        
+        .cost-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: rgba(20, 28, 51, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cost-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .cost-item:nth-child(1) {
+            border-left: 4px solid var(--resource-money);
+        }
+        
+        .cost-item:nth-child(2) {
+            border-left: 4px solid var(--resource-manpower);
+        }
+        
+        .cost-item:nth-child(3) {
+            border-left: 4px solid var(--resource-energy);
+        }
+        
+        .cost-item:nth-child(4) {
+            border-left: 4px solid var(--resource-influence);
+        }
+        
+        .cost-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .cost-details {
+            flex: 1;
+        }
+        
+        .cost-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .cost-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(20, 28, 51, 0.7);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .section-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--accent-primary), transparent);
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 767px) {
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+            
+            .navbar-item {
+                padding: 15px 8px;
+                font-size: 0.9rem;
+            }
+            
+            .wiki-title {
+                font-size: 2rem;
+            }
+            
+            .unit-name {
+                font-size: 1.5rem;
+            }
+            
+            .unit-image-container {
+                height: 220px;
+            }
+            
+            .wiki-stats, .cost-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .weapon-container, .armor-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .weapon-stats, .armor-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar-menu {
+                max-width: 65%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <nav class="navbar" id="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="navbar-brand">COLONY WIKI</a>
+            <div class="navbar-menu">
+                <a href="#overview" class="navbar-item active">Overview</a>
+                <a href="#weapons" class="navbar-item">Weapons</a>
+                <a href="#construction" class="navbar-item">Construction</a>
+                <a href="#strategies" class="navbar-item">Strategies</a>
+                <a href="#counters" class="navbar-item">Counters</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="wiki-container">
+        <div class="unit-image-container">
+            <div class="unit-image">
+            </div>
+            <h2 class="unit-name">Jötunn</h2>
+        </div>
+        
+        <section id="overview" class="wiki-section">
+            <h3 class="section-title">Unit Overview</h3>
+            <p>A heavily armored combat vehicle armed with armor-piercing explosive shells to crush ground targets and rapid three-round micro-shell bursts to destroy aircraft. Built to dominate both land and air with relentless firepower.</p>
+            
+            <div class="wiki-stats">
+                <div class="stat-box">
+                    <div class="stat-name">Structure</div>
+                    <div class="stat-value">Precinct</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Life</div>
+                    <div class="stat-value">450</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Speed</div>
+                    <div class="stat-value">0.15m/s</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Armor</div>
+                    <div class="stat-value">Composite</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Construction Time</div>
+                    <div class="stat-value">8 Seconds</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Air</div>
+                    <div class="stat-value">No</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Healer</div>
+                    <div class="stat-value">No</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Self Heal</div>
+                    <div class="stat-value">None</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Communist Value</div>
+                    <div class="stat-value">12</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Unit Tier</div>
+                    <div class="stat-value">2</div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="weapons" class="wiki-section">
+            <h3 class="section-title">Weapons Systems</h3>
+            <p>The Jötunn features strong anti armor weaponry, most effective against Special.</p>
+            
+            <div class="weapon-container">
+                <div class="weapon-card">
+                    <h4 class="weapon-name">Ground Weapon</h4>
+                    <div class="weapon-stats">
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Damage: </span>125
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Range: </span>340px
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Weapon Type: </span>Unnamed
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Cooldown: </span>6 seconds
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">AoE: </span>21px
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Projectile Speed: </span>15px
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Burst Weapon: </span>No
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Burst Count: </span>0
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weapon-card">
+                    <h4 class="weapon-name">Air Weapon</h4>
+                    <div class="weapon-stats">
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Damage: </span>20
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Range: </span>380px
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Weapon Type: </span>Unnamed
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Cooldown: </span>3 seconds
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">AoE: </span>No
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Projectile Speed: </span>15px
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Burst Weapon: </span>Yes
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Burst Count: </span>3
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="construction" class="wiki-section">
+            <h3 class="section-title">Construction Cost</h3>
+            <div class="cost-section">
+                <div class="cost-item">
+                    <div class="cost-icon" style="background-image: url('images/Money.png');"></div>
+                    <div class="cost-details">
+                        <div class="cost-label">Money</div>
+                        <div class="cost-value">30</div>
+                    </div>
+                </div>
+                
+                <div class="cost-item">
+                    <div class="cost-icon" style="background-image: url('images/Manpower.png');"></div>
+                    <div class="cost-details">
+                        <div class="cost-label">Manpower</div>
+                        <div class="cost-value">30</div>
+                    </div>
+                </div>
+                
+                <div class="cost-item">
+                    <div class="cost-icon" style="background-image: url('images/Energy.png');"></div>
+                    <div class="cost-details">
+                        <div class="cost-label">Energy</div>
+                        <div class="cost-value">10</div>
+                    </div>
+                </div>
+                
+                <div class="cost-item">
+                    <div class="cost-icon" style="background-image: url('images/Influence.png');"></div>
+                    <div class="cost-details">
+                        <div class="cost-label">Influence</div>
+                        <div class="cost-value">10</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="strategies" class="wiki-section">
+            <h3 class="section-title">Combat Strategies</h3>
+            <ul class="strategies-list">
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Anti T3 Specialist</h4>
+                    <p>If your enemy is constructing a lot of black queens, hover tanks or sakatas, build this unit to shred through their expensive armor. The Jötunn's ground weaponry is specifically calibrated to penetrate special armors, making it exceptionally effective against high-tier units.</p>
+                </li>
+                
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Defensive Anchor Point</h4>
+                    <p>Position Jötunns at the front to create powerful space. Their dual weapon systems allow them to engage both ground and air threats simultaneously, making them perfect for holding space against mixed assault forces.</p>
+                </li>
+                
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Support Column Integration</h4>
+                    <p>While the Jötunn moves slowly, it excels when integrated into a combined arms approach. Pair with faster units that can screen and protect against infantry threats, allowing the Jötunn to focus its devastating firepower on high-value targets without being overrun by cheaper counter units.</p>
+                </li>
+            </ul>
+        </section>
+        
+        <section id="counters" class="wiki-section">
+            <h3 class="section-title">Strengths</h3>
+            <ul class="strategies-list">
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Against Special Armor</h4>
+                    <p>The Jötunn's ground and air weapons are built to pierce through Special Armor, making it the perfect counter to expensive enemy units. Its high damage output can quickly neutralize threats that would otherwise dominate the battlefield.</p>
+                </li>
+                
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Ironclad Defense</h4>
+                    <p>The Jötunn features the most powerful composite armor available, specifically designed to withstand the high-damage attacks of most tier 3 units. This survivability ensures it remains operational even under heavy fire, providing sustained value throughout extended engagements.</p>
+                </li>
+            </ul>
+        </section>
+        
+        <section id="counters" class="wiki-section">
+            <h3 class="section-title">Weaknesses</h3>
+            <ul class="strategies-list">
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Infantry Vulnerability</h4>
+                    <p>The armor of the Jötunn is vulnerable to infantry weapons. Units such as the Missile Marine, A25-Romans, S-Marines and Legionnaires will efficiently penetrate its defenses, quickly melting through its otherwise formidable protection.</p>
+                </li>
+                
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Limited Mobility</h4>
+                    <p>With a top speed of only 0.15m/s, the Jötunn is among the slowest units on the battlefield. This lack of mobility makes it vulnerable to being outmaneuvered and outranged by faster units that can strike from a distance and retreat before the Jötunn can effectively respond.</p>
+                </li>
+            </ul>
+        </section>
+    </div>
+
+    <script>
+        // Handle navbar active state on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.wiki-section');
+            const navItems = document.querySelectorAll('.navbar-item');
+            
+            function setActiveNavItem() {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= (sectionTop - 150)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('href') === `#${current}`) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+            
+            window.addEventListener('scroll', setActiveNavItem);
+            
+            // Create stars background
+            function createStars() {
+                const starsContainer = document.getElementById('stars');
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                
+                // Clear existing stars
+                starsContainer.innerHTML = '';
+                
+                // Create stars with different sizes and animations
+                for (let i = 0; i < 200; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    
+                    // Random position
+                    const left = Math.random() * screenWidth;
+                    const top = Math.random() * screenHeight;
+                    
+                    // Random size
+                    const size = Math.random() * 2.5;
+                    
+                    // Random opacity and animation delay
+                    const opacity = Math.random() * 0.7 + 0.3;
+                    const animationDuration = Math.random() * 3 + 2;
+                    const animationDelay = Math.random() * 5;
+                    
+                    // Apply styles
+                    star.style.left = `${left}px`;
+                    star.style.top = `${top}px`;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    star.style.opacity = opacity;
+                    star.style.animation = `twinkle ${animationDuration}s infinite ${animationDelay}s`;
+                    
+                    starsContainer.appendChild(star);
+                }
+            }
+            
+            // Initial call and resize handling
+            createStars();
+            window.addEventListener('resize', createStars);
+        });
+    </script>
+</body>
+</html>
