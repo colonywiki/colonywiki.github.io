@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colony Wiki - Marine</title>
+    <style>
+        @font-face {
+            font-family: 'SpaceFont';
+            src: url('https://fonts.cdnfonts.com/css/helvetica-neue-9') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141c33;
+            --accent-primary: #4287f5;
+            --accent-secondary: #32f9e5;
+            --text-primary: #e1e8ff;
+            --text-secondary: #a3aed0;
+            --border-color: #263566;
+            --resource-energy: #89FDFC;
+            --resource-money: #CBFF65;
+            --resource-manpower: #FFECA2;
+            --resource-influence: #FFBBEB;
+            --category-infantry: #FF7676;
+            --category-vehicle: #76A5FF;
+            --category-aircraft: #B576FF;
+            --category-deployment: #76FFB5;
+            --category-resource: #FFD876;
+            --category-weapons: #FF76C1;
+            --category-hybrid: #76FFFA;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SpaceFont', 'Helvetica Neue', 'Silom', '_sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(50, 249, 229, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+            50% { text-shadow: 0 0 15px rgba(50, 249, 229, 0.8), 0 0 30px rgba(50, 249, 229, 0.4); }
+            100% { text-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes borderGlow {
+            0% { border-color: var(--accent-primary); }
+            50% { border-color: var(--accent-secondary); }
+            100% { border-color: var(--accent-primary); }
+        }
+        
+        @keyframes statsNumberCount {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes statsIconRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        @keyframes statsGrow {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 25% 15%, rgba(66, 135, 245, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 75% 85%, rgba(50, 249, 229, 0.1) 0%, transparent 25%);
+            overflow-x: hidden;
+        }
+        
+        /* Stars Background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .wiki-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 100px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .navbar-brand {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--accent-secondary);
+            padding: 15px 0;
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.3);
+            letter-spacing: 2px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            text-shadow: 0 0 15px rgba(50, 249, 229, 0.6);
+            transform: scale(1.05);
+        }
+        
+        .navbar-menu {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            max-width: 70%;
+            scrollbar-width: none;
+        }
+        
+        .navbar-menu::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .navbar-item {
+            padding: 15px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        
+        .navbar-item:hover, .navbar-item.active {
+            color: var(--accent-secondary);
+            border-bottom: 2px solid var(--accent-secondary);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 30px 0;
+        }
+        
+        .wiki-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--accent-secondary);
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.5);
+        }
+        
+        .wiki-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .unit-image-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 30px rgba(66, 135, 245, 0.2);
+            transition: all 0.4s cubic-bezier(0, 0.8, 0.4, 1);
+            background: linear-gradient(180deg, rgba(20, 28, 51, 0.95) 0%, rgba(10, 14, 26, 0.95) 100%);
+        }
+        
+        .unit-image-container:hover {
+            border-color: var(--category-vehicle);
+            box-shadow: 0 0 40px rgba(118, 165, 255, 0.25);
+            transform: translateY(-5px);
+        }
+        
+        .unit-image-container::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to top, rgba(10, 14, 26, 0.8), transparent);
+            z-index: 1;
+        }
+        
+        .unit-image {
+            width: 100%;
+            height: 100%;
+            background: url('images/marine.svg') center center no-repeat;
+            background-size: contain;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .unit-image-container:hover .unit-image {
+            transform: scale(1.08);
+        }
+        
+        .unit-name {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 2.2rem;
+            color: var(--category-vehicle);
+            text-shadow: 0 0 15px rgba(118, 165, 255, 0.8);
+            animation: glow 3s infinite;
+            z-index: 2;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .unit-type-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--category-vehicle);
+            color: var(--bg-primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            z-index: 2;
+            box-shadow: 0 0 10px rgba(118, 165, 255, 0.6);
+            animation: pulse 3s infinite;
+        }
+        
+        .wiki-section {
+            background: linear-gradient(180deg, rgba(20, 28, 51, 0.95) 0%, rgba(10, 14, 26, 0.95) 100%);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            margin-bottom: 35px;
+            scroll-margin-top: 90px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .wiki-section:hover {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            border-color: rgba(66, 135, 245, 0.4);
+            transform: translateY(-5px);
+        }
+        
+        .wiki-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at top right, rgba(66, 135, 245, 0.1), transparent 70%);
+            pointer-events: none;
+        }
+        
+        .section-title {
+            color: var(--accent-primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            position: relative;
+            display: inline-block;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            transition: all 0.3s ease;
+        }
+        
+        .wiki-section:hover .section-title {
+            color: var(--accent-secondary);
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.3);
+        }
+        
+        .wiki-section:hover .section-title::after {
+            height: 3px;
+            box-shadow: 0 0 10px rgba(50, 249, 229, 0.5);
+        }
+        
+        .wiki-section p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            margin-bottom: 20px;
+            line-height: 1.7;
+            transition: all 0.3s ease;
+        }
+        
+        .wiki-section:hover p {
+            color: var(--text-primary);
+        }
+        
+        .wiki-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+            position: relative;
+        }
+        
+        .wiki-stats::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(118, 165, 255, 0.05), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .stat-box {
+            background: linear-gradient(145deg, rgba(20, 28, 51, 0.9), rgba(10, 14, 26, 0.9));
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(38, 53, 102, 0.6);
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: statsGrow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        
+        .stat-box:nth-child(1) { animation-delay: 0.1s; }
+        .stat-box:nth-child(2) { animation-delay: 0.2s; }
+        .stat-box:nth-child(3) { animation-delay: 0.3s; }
+        .stat-box:nth-child(4) { animation-delay: 0.4s; }
+        .stat-box:nth-child(5) { animation-delay: 0.5s; }
+        .stat-box:nth-child(6) { animation-delay: 0.6s; }
+        .stat-box:nth-child(7) { animation-delay: 0.7s; }
+        .stat-box:nth-child(8) { animation-delay: 0.8s; }
+        .stat-box:nth-child(9) { animation-delay: 0.9s; }
+        .stat-box:nth-child(10) { animation-delay: 1s; }
+        
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(118, 165, 255, 0.1) 0%, 
+                transparent 50%, 
+                rgba(50, 249, 229, 0.05) 100%);
+            pointer-events: none;
+        }
+        
+        .stat-box::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, 
+                rgba(118, 165, 255, 0.1), 
+                transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-8px) scale(1.05);
+            border-color: var(--category-vehicle);
+            background: linear-gradient(145deg, rgba(25, 36, 65, 0.95), rgba(15, 22, 40, 0.95));
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 
+                        0 0 15px rgba(118, 165, 255, 0.3);
+        }
+        
+        .stat-box:hover::after {
+            opacity: 1;
+        }
+        
+        .stat-icon {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--category-vehicle);
+            text-shadow: 0 0 10px rgba(118, 165, 255, 0.5);
+            position: relative;
+            height: 40px;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .stat-box:hover .stat-icon {
+            transform: scale(1.2);
+            animation: statsIconRotate 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .stat-name {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 600;
+        }
+        
+        .stat-box:hover .stat-name {
+            color: var(--text-primary);
+        }
+        
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: linear-gradient(90deg, var(--accent-primary), var(--category-vehicle));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: statsNumberCount 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation-delay: 0.3s;
+        }
+        
+        .stat-box:nth-child(1) .stat-value { animation-delay: 0.4s; }
+        .stat-box:nth-child(2) .stat-value { animation-delay: 0.5s; }
+        .stat-box:nth-child(3) .stat-value { animation-delay: 0.6s; }
+        .stat-box:nth-child(4) .stat-value { animation-delay: 0.7s; }
+        .stat-box:nth-child(5) .stat-value { animation-delay: 0.8s; }
+        .stat-box:nth-child(6) .stat-value { animation-delay: 0.9s; }
+        .stat-box:nth-child(7) .stat-value { animation-delay: 1s; }
+        .stat-box:nth-child(8) .stat-value { animation-delay: 1.1s; }
+        .stat-box:nth-child(9) .stat-value { animation-delay: 1.2s; }
+        .stat-box:nth-child(10) .stat-value { animation-delay: 1.3s; }
+        
+        .stat-box:hover .stat-value {
+            transform: scale(1.1);
+            text-shadow: 0 0 15px rgba(118, 165, 255, 0.6);
+            background: linear-gradient(90deg, var(--accent-secondary), var(--category-vehicle));
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        .stat-divider {
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--accent-primary), transparent);
+            margin: 8px auto;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-box:hover .stat-divider {
+            width: 60px;
+            background: linear-gradient(to right, transparent, var(--category-vehicle), transparent);
+            box-shadow: 0 0 10px rgba(118, 165, 255, 0.4);
+        }
+        
+        .weapon-container, .armor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        .weapon-card, .armor-card {
+            background-color: rgba(10, 14, 26, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0, 0.8, 0.4, 1);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.25);
+        }
+        
+        .weapon-card:hover, .armor-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
+            border-color: var(--accent-secondary);
+            background-color: rgba(20, 28, 51, 0.8);
+        }
+        
+        .weapon-card::before, .armor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
+            transition: all 0.3s ease;
+        }
+        
+        .weapon-card:hover::before, .armor-card:hover::before {
+            width: 7px;
+            box-shadow: 0 0 15px rgba(50, 249, 229, 0.5);
+        }
+        
+        .weapon-name, .armor-name {
+            color: var(--accent-primary);
+            margin-bottom: 18px;
+            padding-left: 15px;
+            font-size: 1.4rem;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+        
+        .weapon-card:hover .weapon-name, .armor-card:hover .armor-name {
+            color: var(--accent-secondary);
+            border-bottom-color: var(--accent-secondary);
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.3);
+        }
+        
+        .weapon-stats, .armor-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding-left: 15px;
+        }
+        
+        .weapon-stat, .armor-stat {
+            font-size: 1.3rem;
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(10, 14, 26, 0.6);
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(38, 53, 102, 0.4);
+        }
+        
+        .weapon-stat:hover, .armor-stat:hover {
+            background-color: rgba(20, 28, 51, 0.8);
+            transform: translateY(-3px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .weapon-stat-name, .armor-stat-name {
+            color: var(--accent-secondary);
+            font-size: 1rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .strategies-list {
+            list-style-type: none;
+        }
+        
+        .strategy-item {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: rgba(10, 14, 26, 0.7);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0, 0.8, 0.4, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .strategy-item:hover {
+            border-color: var(--category-vehicle);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            background-color: rgba(20, 28, 51, 0.8);
+        }
+        
+        .strategy-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-primary), var(--category-vehicle));
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+        
+        .strategy-item:hover::before {
+            width: 6px;
+            opacity: 1;
+            box-shadow: 0 0 10px rgba(118, 165, 255, 0.6);
+        }
+        
+        .strategy-title {
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            font-size: 1.35rem;
+            position: relative;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            padding-left: 10px;
+        }
+        
+        .strategy-item:hover .strategy-title {
+            color: var(--category-vehicle);
+            text-shadow: 0 0 10px rgba(118, 165, 255, 0.4);
+            transform: translateX(5px);
+        }
+        
+        .strategy-item p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            transition: all 0.3s ease;
+            padding-left: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .strategy-item:hover p {
+            color: var(--text-primary);
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .tag {
+            background-color: rgba(66, 135, 245, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--accent-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .tag:hover {
+            background-color: rgba(66, 135, 245, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .cost-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 10px 5px;
+        }
+        
+        .cost-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: rgba(10, 14, 26, 0.7);
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0, 0.8, 0.4, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .cost-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .cost-item:nth-child(1) {
+            border-left: 4px solid var(--resource-money);
+        }
+        
+        .cost-item:nth-child(1):hover {
+            border-color: var(--resource-money);
+            box-shadow: 0 15px 30px rgba(203, 255, 101, 0.2);
+        }
+        
+        .cost-item:nth-child(2) {
+            border-left: 4px solid var(--resource-manpower);
+        }
+        
+        .cost-item:nth-child(2):hover {
+            border-color: var(--resource-manpower);
+            box-shadow: 0 15px 30px rgba(255, 236, 162, 0.2);
+        }
+        
+        .cost-item:nth-child(3) {
+            border-left: 4px solid var(--resource-energy);
+        }
+        
+        .cost-item:nth-child(3):hover {
+            border-color: var(--resource-energy);
+            box-shadow: 0 15px 30px rgba(137, 253, 252, 0.2);
+        }
+        
+        .cost-item:nth-child(4) {
+            border-left: 4px solid var(--resource-influence);
+        }
+        
+        .cost-item:nth-child(4):hover {
+            border-color: var(--resource-influence);
+            box-shadow: 0 15px 30px rgba(255, 187, 235, 0.2);
+        }
+        
+        .cost-icon {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: all 0.3s ease;
+        }
+        
+        .cost-item:hover .cost-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .cost-details {
+            flex: 1;
+        }
+        
+        .cost-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .cost-item:hover .cost-label {
+            color: var(--text-primary);
+        }
+        
+        .cost-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .cost-item:nth-child(1):hover .cost-value {
+            color: var(--resource-money);
+            text-shadow: 0 0 10px rgba(203, 255, 101, 0.4);
+        }
+        
+        .cost-item:nth-child(2):hover .cost-value {
+            color: var(--resource-manpower);
+            text-shadow: 0 0 10px rgba(255, 236, 162, 0.4);
+        }
+        
+        .cost-item:nth-child(3):hover .cost-value {
+            color: var(--resource-energy);
+            text-shadow: 0 0 10px rgba(137, 253, 252, 0.4);
+        }
+        
+        .cost-item:nth-child(4):hover .cost-value {
+            color: var(--resource-influence);
+            text-shadow: 0 0 10px rgba(255, 187, 235, 0.4);
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(20, 28, 51, 0.7);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .section-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--accent-primary), transparent);
+            margin: 25px 0;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--accent-secondary);
+            color: var(--accent-secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(50, 249, 229, 0.3);
+            animation: pulse 3s infinite;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            background-color: var(--accent-secondary);
+            color: var(--bg-primary);
+        }
+        
+        .related-units {
+            margin-top: 40px;
+        }
+        
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .related-card {
+            background: linear-gradient(180deg, rgba(20, 28, 51, 0.95) 0%, rgba(10, 14, 26, 0.95) 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0, 0.8, 0.4, 1);
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+        }
+        
+        .related-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(118, 165, 255, 0.2);
+            border-color: var(--category-vehicle);
+        }
+        
+        .related-image {
+            width: 100%;
+            height: 130px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: rgba(10, 14, 26, 0.6);
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .related-card:hover .related-image {
+            transform: scale(1.08);
+        }
+        
+        .related-info {
+            padding: 15px;
+            position: relative;
+            z-index: 2;
+            border-top: 1px solid rgba(38, 53, 102, 0.4);
+            background: linear-gradient(to bottom, rgba(20, 28, 51, 0.5), rgba(10, 14, 26, 0.9));
+        }
+        
+        .related-name {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .related-card:hover .related-name {
+            color: var(--category-vehicle);
+            transform: translateY(-2px);
+        }
+        
+        .related-type {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Effectiveness visualization styles - UPDATED */
+        .effectiveness-container {
+            margin: 25px 0;
+            position: relative;
+            background: linear-gradient(145deg, rgba(20, 28, 51, 0.9), rgba(10, 14, 26, 0.9));
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0, 0.8, 0.4, 1);
+            overflow: hidden;
+        }
+        
+        .effectiveness-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at top right, 
+                rgba(66, 135, 245, 0.1), transparent 70%);
+            pointer-events: none;
+        }
+        
+        .effectiveness-container:hover {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            border-color: rgba(66, 135, 245, 0.4);
+            transform: translateY(-5px);
+        }
+        
+        .effectiveness-title {
+            color: var(--accent-primary);
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            position: relative;
+            display: inline-block;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        .effectiveness-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            transition: all 0.3s ease;
+        }
+        
+        .effectiveness-container:hover .effectiveness-title {
+            color: var(--accent-secondary);
+            text-shadow: 0 0 10px rgba(50, 249, 229, 0.3);
+        }
+        
+        .effectiveness-container:hover .effectiveness-title::after {
+            height: 3px;
+            box-shadow: 0 0 10px rgba(50, 249, 229, 0.5);
+        }
+        
+        /* Now create a flex container for the matchups */
+        .matchup-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .unit-matchup {
+            background: linear-gradient(145deg, rgba(25, 36, 65, 0.7), rgba(15, 22, 40, 0.7));
+            border-radius: 12px;
+            padding: 20px;
+            width: calc(25% - 15px);
+            min-width: 140px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 1px solid rgba(38, 53, 102, 0.6);
+            animation: statsGrow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        
+        .unit-matchup:nth-child(1) { animation-delay: 0.1s; }
+        .unit-matchup:nth-child(2) { animation-delay: 0.2s; }
+        .unit-matchup:nth-child(3) { animation-delay: 0.3s; }
+        .unit-matchup:nth-child(4) { animation-delay: 0.4s; }
+        
+        .unit-matchup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(118, 165, 255, 0.1) 0%, 
+                transparent 50%, 
+                rgba(50, 249, 229, 0.05) 100%);
+            pointer-events: none;
+        }
+        
+        .unit-matchup.effective {
+            border-color: rgba(118, 255, 181, 0.4);
+        }
+        
+        .unit-matchup.weak {
+            border-color: rgba(255, 118, 118, 0.4);
+        }
+        
+        .unit-matchup:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
+            z-index: 2;
+        }
+        
+        .unit-matchup.effective:hover {
+            border-color: var(--category-deployment);
+            box-shadow: 0 15px 30px rgba(118, 255, 181, 0.2);
+        }
+        
+        .unit-matchup.weak:hover {
+            border-color: var(--category-infantry);
+            box-shadow: 0 15px 30px rgba(255, 118, 118, 0.2);
+        }
+        
+        .unit-icon {
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin-bottom: 15px;
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .unit-matchup:hover .unit-icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+        
+        .unit-name-small {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            position: relative;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .unit-matchup.effective:hover .unit-name-small {
+            color: var(--category-deployment);
+        }
+        
+        .unit-matchup.weak:hover .unit-name-small {
+            color: var(--category-infantry);
+        }
+        
+        .effectiveness-indicator {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 5px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        
+        .unit-matchup.effective .effectiveness-indicator {
+            color: var(--category-deployment);
+            text-shadow: 0 0 10px rgba(118, 255, 181, 0.4);
+        }
+        
+        .unit-matchup.weak .effectiveness-indicator {
+            color: var(--category-infantry);
+            text-shadow: 0 0 10px rgba(255, 118, 118, 0.4);
+        }
+        
+        .unit-matchup:hover .effectiveness-indicator {
+            transform: scale(1.2);
+        }
+        
+        /* Divider in each matchup */
+        .matchup-divider {
+            width: 50px;
+            height: 3px;
+            margin: 10px auto;
+            transition: all 0.3s ease;
+        }
+        
+        .unit-matchup.effective .matchup-divider {
+            background: linear-gradient(to right, transparent, var(--category-deployment), transparent);
+        }
+        
+        .unit-matchup.weak .matchup-divider {
+            background: linear-gradient(to right, transparent, var(--category-infantry), transparent);
+        }
+        
+        .unit-matchup:hover .matchup-divider {
+            width: 70px;
+            box-shadow: 0 0 10px rgba(118, 255, 181, 0.4);
+        }
+        
+        @media (max-width: 767px) {
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+            
+            .navbar-item {
+                padding: 15px 8px;
+                font-size: 0.9rem;
+            }
+            
+            .wiki-title {
+                font-size: 2rem;
+            }
+            
+            .unit-name {
+                font-size: 1.8rem;
+            }
+            
+            .unit-image-container {
+                height: 220px;
+            }
+            
+            .wiki-stats, .cost-section {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+            
+            .weapon-container, .armor-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .weapon-stats, .armor-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .related-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .navbar-menu {
+                max-width: 65%;
+            }
+            
+            .strategy-item, .cost-item, .weapon-card, .stat-box {
+                transform: none !important;
+            }
+            
+            .stat-icon {
+                font-size: 1.5rem;
+                height: 35px;
+                width: 35px;
+            }
+            
+            .stat-value {
+                font-size: 1.2rem;
+            }
+            
+            .unit-matchup {
+                width: calc(50% - 15px);
+                min-width: 120px;
+            }
+            
+            .effectiveness-title {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .wiki-stats {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 12px;
+            }
+            
+            .cost-section, .related-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .weapon-stats, .armor-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .unit-image-container {
+                height: 180px;
+            }
+            
+            .unit-name {
+                font-size: 1.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .stat-box {
+                padding: 15px 10px;
+            }
+            
+            .stat-icon {
+                font-size: 1.3rem;
+                height: 30px;
+                width: 30px;
+                margin-bottom: 8px;
+            }
+            
+            .stat-name {
+                font-size: 0.8rem;
+                margin-bottom: 8px;
+            }
+            
+            .stat-value {
+                font-size: 1.1rem;
+            }
+            
+            .stat-divider {
+                margin: 6px auto;
+            }
+            
+            .unit-matchup {
+                width: calc(100% - 15px);
+                min-width: 100px;
+            }
+            
+            .unit-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .effectiveness-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <nav class="navbar" id="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="navbar-brand">COLONY WIKI</a>
+            <div class="navbar-menu">
+                <a href="#overview" class="navbar-item active">Overview</a>
+                <a href="#weapons" class="navbar-item">Weapons</a>
+                <a href="#construction" class="navbar-item">Construction</a>
+                <a href="#strengths" class="navbar-item">Strengths</a>
+                <a href="#weaknesses" class="navbar-item">Weaknesses</a>
+                <a href="#strategies" class="navbar-item">Strategies</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="wiki-container">
+        <div class="unit-image-container">
+            <div class="unit-image"></div>
+            <h2 class="unit-name">Marine</h2>
+        </div>
+        
+        <section id="overview" class="wiki-section">
+            <h3 class="section-title">Unit Overview</h3>
+            <p>A fresh human recruit armed with a shock rifle, rockets, and the morale to carry out the orders of their commander. They are the backbone of the early game for Outpost and are respectable for their decent anti-air capabilities, cheap cost, and expendability.</p>
+            
+            <div class="wiki-stats">
+                <div class="stat-box">
+                    <div class="stat-name">Structure</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">Outpost</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Life</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">62</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Speed</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">30px/s</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Armor</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">Light</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Build Time</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">1.2 Seconds</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Air</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">No</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Healer</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">No</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Self Heal</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">None</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Unit Value</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">1</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-name">Unit Tier</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-value">1</div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="weapons" class="wiki-section">
+            <h3 class="section-title">Weapons Systems</h3>
+            <p>Marines carry shock rifles for ground-to-ground engagements and rockets for ground-to-air ones respectively. Their ground capabilities are respectable but easily outclassed by other bulkier and harsher units, though their air-seeking rockets are effective at controlling the skies early on.</p>
+            
+            <div class="weapon-container">
+                <div class="weapon-card">
+                    <h4 class="weapon-name">Ground Weapon</h4>
+                    <div class="weapon-stats">
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Damage: </span>9
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Range: </span>260px
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Weapon Type: </span>Infantry
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Cooldown: </span>0.5 seconds
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">AoE: </span>None
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Projectile Speed: </span>Instant
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Burst Weapon: </span>No
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Burst Count: </span>0
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weapon-card">
+                    <h4 class="weapon-name">Air Weapon</h4>
+                    <div class="weapon-stats">
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Damage: </span>37
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Range: </span>385px
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Weapon Type: </span>Infantry
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Cooldown: </span>6 seconds
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">AoE: </span>5px
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Projectile Speed: </span>18px
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Burst Weapon: </span>No
+                        </div>
+                        <div class="weapon-stat">
+                            <span class="weapon-stat-name">Burst Count: </span>0
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="construction" class="wiki-section">
+            <h3 class="section-title">Construction Cost</h3>
+            <div class="cost-section">
+                <div class="cost-item">
+                    <div class="cost-icon" style="background-image: url('images/Money.png');"></div>
+                    <div class="cost-details">
+                        <div class="cost-label">Money</div>
+                        <div class="cost-value">0</div>
+                    </div>
+                </div>
+                
+                <div class="cost-item">
+                    <div class="cost-icon" style="background-image: url('images/Manpower.png');"></div>
+                    <div class="cost-details">
+                        <div class="cost-label">Manpower</div>
+                        <div class="cost-value">2</div>
+                    </div>
+                </div>
+                
+                <div class="cost-item">
+                    <div class="cost-icon" style="background-image: url('images/Energy.png');"></div>
+                    <div class="cost-details">
+                        <div class="cost-label">Energy</div>
+                        <div class="cost-value">0</div>
+                    </div>
+                </div>
+                
+                <div class="cost-item">
+                    <div class="cost-icon" style="background-image: url('images/Influence.png');"></div>
+                    <div class="cost-details">
+                        <div class="cost-label">Influence</div>
+                        <div class="cost-value">0</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="strengths" class="wiki-section">
+            <h3 class="section-title">Strengths</h3>
+            <ul class="strategies-list">
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Cheap and Expendable</h4>
+                    <p>Marines are the cheapest unit in the game, only costing 2 Manpower each, and even potentially sustainable early on for Communist governments. For this reason, Marine losses hurt less than other units, and they can be quickly deployed to recuperate lost numbers.</p>
+                </li>
+                
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Air Control</h4>
+                    <p>The standout weapon for Marines is their anti-air rocket weaponry. Although not much in comparison to proper anti-air units, a crowd of Marines can turn airspace near them into a danger zone for encroaching Scout swarms and the like. If used with proper micro, they can advance on Scouts early on to shoot them out of the air, retreat, then return again to finish off the surviving units.</p>
+                </li>
+                
+                <div class="effectiveness-container">
+                    <h4 class="effectiveness-title">Effective Against</h4>
+                    <div class="matchup-grid">
+                        <div class="unit-matchup effective">
+                            <div class="unit-icon" style="background-image: url('images/scout.png');"></div>
+                            <div class="unit-name-small">Scout</div>
+                            <div class="matchup-divider"></div>
+                            <div class="effectiveness-indicator">++</div>
+                        </div>
+                        <div class="unit-matchup effective">
+                            <div class="unit-icon" style="background-image: url('images/meditec.svg');"></div>
+                            <div class="unit-name-small">Meditec</div>
+                            <div class="matchup-divider"></div>
+                            <div class="effectiveness-indicator">++</div>
+                        </div>
+                        <div class="unit-matchup effective">
+                            <div class="unit-icon" style="background-image: url('images/jotunn.png');"></div>
+                            <div class="unit-name-small">Jotunn</div>
+                            <div class="matchup-divider"></div>
+                            <div class="effectiveness-indicator">++</div>
+                        </div>
+                        <div class="unit-matchup effective">
+                            <div class="unit-icon" style="background-image: url('images/sphinx.png');"></div>
+                            <div class="unit-name-small">Sphinx</div>
+                            <div class="matchup-divider"></div>
+                            <div class="effectiveness-indicator">+</div>
+                        </div>
+                    </div>
+                </div>
+            </ul>
+        </section>
+        
+        <section id="weaknesses" class="wiki-section">
+            <h3 class="section-title">Weaknesses</h3>
+            <ul class="strategies-list">
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Low Damage and Penetration</h4>
+                    <p>Marines bear unremarkable ground damage individually, not able to quickly eliminate even A25-Romans without suffering losses. Against Chronite, they are nearly useless, easily blasted apart by Chronite Tanks and whittled away by Gröditz.</p>
+                </li>
+                
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Low Health</h4>
+                    <p>Marines compete for being one of the weakest units in terms of health, bearing a measly 62 health that even the base can eliminate in one or two shots. Since they're usually used in groups, splash damage from Chronite Tanks and Missiles are a death sentence, killing them all immediately. Their low health makes them ineffective targets for Meditecs to stand by and heal as well.</p>
+                </li>
+				
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Short Range</h4>
+                    <p>Marines are not known for having impressive range. Chronite Tanks outrange them and kill them immediately with one shot, and Snipers outrange them outright and can kill Marines before they even reach retaliation range. Even the Base outranges Marines, killing individual ones before they can even fire their weapon.</p>
+                </li>
+				
+                
+                <div class="effectiveness-container">
+                    <h4 class="effectiveness-title">Weak Against</h4>
+                    <div class="matchup-grid">
+                        <div class="unit-matchup weak">
+                            <div class="unit-icon" style="background-image: url('images/chronitetank.png');"></div>
+                            <div class="unit-name-small">Chronite Tank</div>
+                            <div class="matchup-divider"></div>
+                            <div class="effectiveness-indicator">---</div>
+                        </div>
+                        <div class="unit-matchup weak">
+                            <div class="unit-icon" style="background-image: url('images/sniper.png');"></div>
+                            <div class="unit-name-small">Sniper</div>
+                            <div class="matchup-divider"></div>
+                            <div class="effectiveness-indicator">---</div>
+                        </div>
+                        <div class="unit-matchup weak">
+                            <div class="unit-icon" style="background-image: url('images/groditz.png');"></div>
+                            <div class="unit-name-small">Gröditz</div>
+                            <div class="matchup-divider"></div>
+                            <div class="effectiveness-indicator">--</div>
+                        </div>
+                        <div class="unit-matchup weak">
+                            <div class="unit-icon" style="background-image: url('images/a25roman.svg');"></div>
+                            <div class="unit-name-small">A25-Roman</div>
+                            <div class="matchup-divider"></div>
+                            <div class="effectiveness-indicator">-</div>
+                        </div>
+                    </div>
+                </div>
+            </ul>
+        </section>
+		
+		<section id="strategies" class="wiki-section">
+            <h3 class="section-title">Combat Strategies</h3>
+            <ul class="strategies-list">
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Marine Micro</h4>
+                    <p>Marines are the perfect early-game counter to Forge opponents amassing Scouts, if proper micro is used. Quickly build a sizable marine group, around 10 or so, and push to the middle or first quarter of the field. From there, you can micro your Marines to launch their rockets at incoming Scout swarms, making sure to retreat to avoid taking damage from pulse shots, return to fire more rockets, and repeat until you eliminate the swarms. This takes high focus and understanding of the Marine rocket reload time of 6 seconds.</p>
+                </li>
+                
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Missile Baiting</h4>
+                    <p>Being such a cheap unit, it's possible to use singular or small groups of Marines as missile bait to protect your higher value units, if you don't have access to Special armor units that can resist such incoming damage.</p>
+                </li>
+				
+                <li class="strategy-item">
+                    <h4 class="strategy-title">Meat Shields</h4>
+                    <p>Some units benefit greatly from focused fire and only needing to handle one unit at a time. You can use Marines as a cheap way to crowd your front with units to bait enemy targeting away from your higher value units. This can especially be useful for enemies that have weapons effective such higher value units, rather than cheap Marine fodder.</p>
+                </li>
+            </ul>
+        </section>
+        
+        <section class="wiki-section related-units">
+            <h3 class="section-title">Related Units</h3>
+            <div class="related-grid">
+                <a href="smarine.html" class="related-card">
+                    <div class="related-image" style="background-image: url('images/smarine.svg');"></div>
+                    <div class="related-info">
+                        <h3 class="related-name">S-Marine</h3>
+                        <div class="related-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="sniper.html" class="related-card">
+                    <div class="related-image" style="background-image: url('images/sniper.png');"></div>
+                    <div class="related-info">
+                        <h3 class="related-name">Sniper</h3>
+                        <div class="related-type">Infantry</div>
+                    </div>
+                </a>
+                
+                <a href="a25roman.html" class="related-card">
+                    <div class="related-image" style="background-image: url('images/a25roman.svg');"></div>
+                    <div class="related-info">
+                        <h3 class="related-name">A25-Roman</h3>
+                        <div class="related-type">Infantry</div>
+                    </div>
+                </a>
+				
+                <a href="missilemarine.html" class="related-card">
+                    <div class="related-image" style="background-image: url('images/missilemarine.svg');"></div>
+                    <div class="related-info">
+                        <h3 class="related-name">Missile Marine</h3>
+                        <div class="related-type">Infantry</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </div>
+    
+    <div class="back-to-top" id="backToTop">↑</div>
+
+    <script>
+        // Handle navbar active state on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.wiki-section');
+            const navItems = document.querySelectorAll('.navbar-item');
+            const backToTop = document.getElementById('backToTop');
+            
+            function setActiveNavItem() {
+                let current = '';
+                const scrollPosition = window.pageYOffset;
+                
+                // Check if we should show the back to top button
+                if (scrollPosition > 600) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (scrollPosition >= (sectionTop - 150)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('href') === `#${current}`) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+            
+            window.addEventListener('scroll', setActiveNavItem);
+            
+            // Back to top functionality
+            backToTop.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Create stars background
+            function createStars() {
+                const starsContainer = document.getElementById('stars');
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                
+                // Clear existing stars
+                starsContainer.innerHTML = '';
+                
+                // Create stars with different sizes and animations
+                for (let i = 0; i < 200; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    
+                    // Random position
+                    const left = Math.random() * screenWidth;
+                    const top = Math.random() * screenHeight;
+                    
+                    // Random size
+                    const size = Math.random() * 2.5;
+                    
+                    // Random opacity and animation delay
+                    const opacity = Math.random() * 0.7 + 0.3;
+                    const animationDuration = Math.random() * 3 + 2;
+                    const animationDelay = Math.random() * 5;
+                    
+                    // Apply styles
+                    star.style.left = `${left}px`;
+                    star.style.top = `${top}px`;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    star.style.opacity = opacity;
+                    star.style.animation = `twinkle ${animationDuration}s infinite ${animationDelay}s`;
+                    
+                    starsContainer.appendChild(star);
+                }
+            }
+            
+            // Initial call and resize handling
+            createStars();
+            window.addEventListener('resize', createStars);
+            
+            // Add animation classes to elements that should animate on page load
+            setTimeout(function() {
+                document.querySelectorAll('.weapon-card, .cost-item, .strategy-item, .unit-matchup').forEach((element, index) => {
+                    setTimeout(() => {
+                        element.style.opacity = '0';
+                        element.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            element.style.transition = 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                            element.style.opacity = '1';
+                            element.style.transform = 'translateY(0)';
+                        }, 50);
+                    }, index * 50);
+                });
+            }, 300);
+        });
+    </script>
+</body>
+</html>

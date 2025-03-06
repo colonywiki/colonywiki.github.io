@@ -31,6 +31,10 @@
             --category-resource: #FFD876;
             --category-weapons: #FF76C1;
             --category-hybrid: #76FFFA;
+            --government-capitalist: #CBFF65;
+            --government-communist: #FFECA2;
+            --government-fascist: #89FDFC;
+            --government-monarchy: #FFBBEB;
         }
         
         * {
@@ -57,6 +61,18 @@
             0% { text-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
             50% { text-shadow: 0 0 15px rgba(50, 249, 229, 0.8), 0 0 30px rgba(50, 249, 229, 0.4); }
             100% { text-shadow: 0 0 5px rgba(50, 249, 229, 0.5); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes borderGlow {
+            0% { border-color: var(--accent-primary); }
+            50% { border-color: var(--accent-secondary); }
+            100% { border-color: var(--accent-primary); }
         }
         
         body {
@@ -278,26 +294,172 @@
         .units-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+            gap: 25px;
             padding: 20px 0;
         }
         
         .unit-card {
-            background-color: var(--bg-secondary);
-            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(20, 28, 51, 0.95) 0%, rgba(10, 14, 26, 0.95) 100%);
+            border-radius: 12px;
             overflow: hidden;
             border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0, 0.8, 0.4, 1);
             cursor: pointer;
             position: relative;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
         
         .unit-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(66, 135, 245, 0.3);
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(50, 249, 229, 0.15);
             border-color: var(--accent-secondary);
-            animation: pulse 2s infinite;
+        }
+        
+        .unit-card[data-type="Infantry"]:hover {
+            box-shadow: 0 15px 30px rgba(255, 118, 118, 0.2);
+            border-color: var(--category-infantry);
+        }
+        
+        .unit-card[data-type="Armored Vehicle"]:hover {
+            box-shadow: 0 15px 30px rgba(118, 165, 255, 0.2);
+            border-color: var(--category-vehicle);
+        }
+        
+        .unit-card[data-type="Aircraft"]:hover {
+            box-shadow: 0 15px 30px rgba(181, 118, 255, 0.2);
+            border-color: var(--category-aircraft);
+        }
+        
+        .unit-card[data-type="Unit Deployment Structure"]:hover {
+            box-shadow: 0 15px 30px rgba(118, 255, 181, 0.2);
+            border-color: var(--category-deployment);
+        }
+        
+        .unit-card[data-type="Resource Structure"]:hover {
+            box-shadow: 0 15px 30px rgba(255, 216, 118, 0.2);
+            border-color: var(--category-resource);
+        }
+        
+        .unit-card[data-type="Weapons Structure"]:hover {
+            box-shadow: 0 15px 30px rgba(255, 118, 193, 0.2);
+            border-color: var(--category-weapons);
+        }
+        
+        .unit-card[data-type="Hybrid Structure"]:hover {
+            box-shadow: 0 15px 30px rgba(118, 255, 250, 0.2);
+            border-color: var(--category-hybrid);
+        }
+        
+        .unit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(66, 135, 245, 0.2) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .unit-card:hover::before {
+            opacity: 1;
+        }
+        
+        .unit-card[data-type="Infantry"]::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--category-infantry);
+            box-shadow: 0 0 8px var(--category-infantry);
+            z-index: 2;
+        }
+        
+        .unit-card[data-type="Armored Vehicle"]::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--category-vehicle);
+            box-shadow: 0 0 8px var(--category-vehicle);
+            z-index: 2;
+        }
+        
+        .unit-card[data-type="Aircraft"]::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--category-aircraft);
+            box-shadow: 0 0 8px var(--category-aircraft);
+            z-index: 2;
+        }
+        
+        .unit-card[data-type="Unit Deployment Structure"]::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--category-deployment);
+            box-shadow: 0 0 8px var(--category-deployment);
+            z-index: 2;
+        }
+        
+        .unit-card[data-type="Resource Structure"]::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--category-resource);
+            box-shadow: 0 0 8px var(--category-resource);
+            z-index: 2;
+        }
+        
+        .unit-card[data-type="Weapons Structure"]::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--category-weapons);
+            box-shadow: 0 0 8px var(--category-weapons);
+            z-index: 2;
+        }
+        
+        .unit-card[data-type="Hybrid Structure"]::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--category-hybrid);
+            box-shadow: 0 0 8px var(--category-hybrid);
+            z-index: 2;
         }
         
         .unit-image {
@@ -307,34 +469,150 @@
             background-position: center;
             background-repeat: no-repeat;
             background-color: rgba(10, 14, 26, 0.6);
-            transition: all 0.3s ease;
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .unit-image::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to top, rgba(10, 14, 26, 0.8), transparent);
+            z-index: 1;
         }
         
         .unit-card:hover .unit-image {
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
         
         .unit-info {
-            padding: 15px;
-            text-align: center;
+            padding: 18px;
+            position: relative;
+            z-index: 2;
+            border-top: 1px solid rgba(38, 53, 102, 0.4);
+            transition: all 0.3s ease;
+            background: linear-gradient(to bottom, rgba(20, 28, 51, 0.5), rgba(10, 14, 26, 0.9));
+        }
+        
+        .unit-card:hover .unit-info {
+            background: linear-gradient(to bottom, rgba(25, 35, 65, 0.8), rgba(15, 22, 40, 0.95));
         }
         
         .unit-name {
-            color: var(--accent-primary);
+            color: var(--text-primary);
             font-size: 1.2rem;
             margin-bottom: 5px;
             transition: all 0.3s ease;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            display: inline-block;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
         
         .unit-card:hover .unit-name {
             color: var(--accent-secondary);
+            transform: translateY(-2px);
+            text-shadow: 0 2px 8px rgba(50, 249, 229, 0.4);
+        }
+        
+        .unit-card[data-type="Infantry"]:hover .unit-name {
+            color: var(--category-infantry);
+            text-shadow: 0 2px 8px rgba(255, 118, 118, 0.4);
+        }
+        
+        .unit-card[data-type="Armored Vehicle"]:hover .unit-name {
+            color: var(--category-vehicle);
+            text-shadow: 0 2px 8px rgba(118, 165, 255, 0.4);
+        }
+        
+        .unit-card[data-type="Aircraft"]:hover .unit-name {
+            color: var(--category-aircraft);
+            text-shadow: 0 2px 8px rgba(181, 118, 255, 0.4);
+        }
+        
+        .unit-card[data-type="Unit Deployment Structure"]:hover .unit-name {
+            color: var(--category-deployment);
+            text-shadow: 0 2px 8px rgba(118, 255, 181, 0.4);
+        }
+        
+        .unit-card[data-type="Resource Structure"]:hover .unit-name {
+            color: var(--category-resource);
+            text-shadow: 0 2px 8px rgba(255, 216, 118, 0.4);
+        }
+        
+        .unit-card[data-type="Weapons Structure"]:hover .unit-name {
+            color: var(--category-weapons);
+            text-shadow: 0 2px 8px rgba(255, 118, 193, 0.4);
+        }
+        
+        .unit-card[data-type="Hybrid Structure"]:hover .unit-name {
+            color: var(--category-hybrid);
+            text-shadow: 0 2px 8px rgba(118, 255, 250, 0.4);
+        }
+        
+        .unit-name::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            transition: width 0.3s ease;
+        }
+        
+        .unit-card[data-type="Infantry"] .unit-name::after {
+            background: linear-gradient(to right, var(--category-infantry), rgba(255, 118, 118, 0.6));
+        }
+        
+        .unit-card[data-type="Armored Vehicle"] .unit-name::after {
+            background: linear-gradient(to right, var(--category-vehicle), rgba(118, 165, 255, 0.6));
+        }
+        
+        .unit-card[data-type="Aircraft"] .unit-name::after {
+            background: linear-gradient(to right, var(--category-aircraft), rgba(181, 118, 255, 0.6));
+        }
+        
+        .unit-card[data-type="Unit Deployment Structure"] .unit-name::after {
+            background: linear-gradient(to right, var(--category-deployment), rgba(118, 255, 181, 0.6));
+        }
+        
+        .unit-card[data-type="Resource Structure"] .unit-name::after {
+            background: linear-gradient(to right, var(--category-resource), rgba(255, 216, 118, 0.6));
+        }
+        
+        .unit-card[data-type="Weapons Structure"] .unit-name::after {
+            background: linear-gradient(to right, var(--category-weapons), rgba(255, 118, 193, 0.6));
+        }
+        
+        .unit-card[data-type="Hybrid Structure"] .unit-name::after {
+            background: linear-gradient(to right, var(--category-hybrid), rgba(118, 255, 250, 0.6));
+        }
+        
+        .unit-card:hover .unit-name::after {
+            width: 100%;
         }
         
         .unit-type {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-top: 8px;
+            padding-top: 8px;
+            position: relative;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+        }
+        
+        .unit-card:hover .unit-type {
+            color: var(--text-primary);
+            opacity: 1;
         }
         
         .section-title {
@@ -394,6 +672,270 @@
             color: var(--text-secondary);
         }
         
+        /* Government Section Styles */
+        .governments-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            padding: 20px 0;
+        }
+        
+        .government-card {
+            background: linear-gradient(180deg, rgba(20, 28, 51, 0.95) 0%, rgba(10, 14, 26, 0.95) 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0, 0.8, 0.4, 1);
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .government-card.industrial {
+            border-top: 4px solid var(--government-capitalist);
+        }
+        
+        .government-card.scientific {
+            border-top: 4px solid var(--government-communist);
+        }
+        
+        .government-card.military {
+            border-top: 4px solid var(--government-fascist);
+        }
+        
+        .government-card.diplomatic {
+            border-top: 4px solid var(--government-monarchy);
+        }
+        
+        .government-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(66, 135, 245, 0.2);
+        }
+        
+        .government-card.industrial:hover {
+            box-shadow: 0 15px 35px rgba(203, 255, 101, 0.2);
+        }
+        
+        .government-card.scientific:hover {
+            box-shadow: 0 15px 35px rgba(255, 236, 162, 0.2);
+        }
+        
+        .government-card.military:hover {
+            box-shadow: 0 15px 35px rgba(137, 253, 252, 0.2);
+        }
+        
+        .government-card.diplomatic:hover {
+            box-shadow: 0 15px 35px rgba(255, 187, 235, 0.2);
+        }
+        
+        .government-image {
+            width: 100%;
+            height: 180px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: rgba(10, 14, 26, 0.8);
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .government-card:hover .government-image {
+            transform: scale(1.05);
+        }
+        
+        .government-image::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to top, rgba(10, 14, 26, 0.8), transparent);
+            z-index: 1;
+        }
+        
+        .government-info {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+            border-top: 1px solid rgba(38, 53, 102, 0.4);
+            background: linear-gradient(to bottom, rgba(20, 28, 51, 0.5), rgba(10, 14, 26, 0.9));
+            transition: all 0.3s ease;
+        }
+        
+        .government-card:hover .government-info {
+            background: linear-gradient(to bottom, rgba(25, 35, 65, 0.8), rgba(15, 22, 40, 0.95));
+        }
+        
+        .government-name {
+            color: var(--text-primary);
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+            display: inline-block;
+            align-self: center;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .government-card:hover .government-name {
+            transform: translateY(-3px);
+        }
+        
+        .government-card.industrial:hover .government-name {
+            color: var(--government-capitalist);
+            text-shadow: 0 2px 8px rgba(203, 255, 101, 0.4);
+        }
+        
+        .government-card.scientific:hover .government-name {
+            color: var(--government-communist);
+            text-shadow: 0 2px 8px rgba(255, 236, 162, 0.4);
+        }
+        
+        .government-card.military:hover .government-name {
+            color: var(--government-fascist);
+            text-shadow: 0 2px 8px rgba(137, 253, 252, 0.4);
+        }
+        
+        .government-card.diplomatic:hover .government-name {
+            color: var(--government-monarchy);
+            text-shadow: 0 2px 8px rgba(255, 187, 235, 0.4);
+        }
+        
+        .government-name::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .government-card.industrial .government-name::after {
+            background: var(--government-capitalist);
+        }
+        
+        .government-card.scientific .government-name::after {
+            background: var(--government-communist);
+        }
+        
+        .government-card.military .government-name::after {
+            background: var(--government-fascist);
+        }
+        
+        .government-card.diplomatic .government-name::after {
+            background: var(--government-monarchy);
+        }
+        
+        .government-card:hover .government-name::after {
+            width: 70px;
+        }
+        
+        .government-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            flex-grow: 1;
+            line-height: 1.7;
+            transition: all 0.3s ease;
+        }
+        
+        .government-card:hover .government-description {
+            color: var(--text-primary);
+        }
+        
+        .government-perks {
+            background-color: rgba(10, 14, 26, 0.5);
+            padding: 15px 18px;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .government-card:hover .government-perks {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .government-perks::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent-primary);
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .industrial .government-perks::before {
+            background: var(--government-capitalist);
+            box-shadow: 0 0 15px rgba(203, 255, 101, 0.4);
+        }
+        
+        .scientific .government-perks::before {
+            background: var(--government-communist);
+            box-shadow: 0 0 15px rgba(255, 236, 162, 0.4);
+        }
+        
+        .military .government-perks::before {
+            background: var(--government-fascist);
+            box-shadow: 0 0 15px rgba(137, 253, 252, 0.4);
+        }
+        
+        .diplomatic .government-perks::before {
+            background: var(--government-monarchy);
+            box-shadow: 0 0 15px rgba(255, 187, 235, 0.4);
+        }
+        
+        .government-perks-title {
+            color: var(--accent-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        
+        .industrial:hover .government-perks-title {
+            color: var(--government-capitalist);
+        }
+        
+        .scientific:hover .government-perks-title {
+            color: var(--government-communist);
+        }
+        
+        .military:hover .government-perks-title {
+            color: var(--government-fascist);
+        }
+        
+        .diplomatic:hover .government-perks-title {
+            color: var(--government-monarchy);
+        }
+        
+        .government-perks-text {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
         @media (max-width: 767px) {
             .navbar-brand {
                 font-size: 1.3rem;
@@ -448,6 +990,20 @@
                 font-size: 0.75rem;
                 padding: 5px 10px;
             }
+            
+            .governments-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .government-name {
+                font-size: 1.1rem;
+            }
+            
+            .government-description,
+            .government-perks-text {
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -489,24 +1045,9 @@
                 </div>
             </div>
 
-            <div class="category-legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--category-infantry);"></div>
-                    <span>Infantry</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--category-vehicle);"></div>
-                    <span>Armored Vehicle</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--category-aircraft);"></div>
-                    <span>Aircraft</span>
-                </div>
-            </div>
-
             <div class="units-grid" id="units-grid">
                 <a href="a25roman.html" class="unit-card" data-type="Infantry" data-name="A25-Roman">
-                    <div class="unit-image" style="background-image: url('images/a25roman.png');"></div>
+                    <div class="unit-image" style="background-image: url('images/a25roman.svg');"></div>
                     <div class="unit-info">
                         <h3 class="unit-name">A25-Roman</h3>
                         <div class="unit-type">Infantry</div>
@@ -538,7 +1079,7 @@
                 </a>
                 
                 <a href="marine.html" class="unit-card" data-type="Infantry" data-name="Marine">
-                    <div class="unit-image" style="background-image: url('images/marine.png');"></div>
+                    <div class="unit-image" style="background-image: url('images/marine.svg');"></div>
                     <div class="unit-info">
                         <h3 class="unit-name">Marine</h3>
                         <div class="unit-type">Infantry</div>
@@ -546,7 +1087,7 @@
                 </a>
                 
                 <a href="missilemarine.html" class="unit-card" data-type="Infantry" data-name="Missile Marine">
-                    <div class="unit-image" style="background-image: url('images/missilemarine.png');"></div>
+                    <div class="unit-image" style="background-image: url('images/missilemarine.svg');"></div>
                     <div class="unit-info">
                         <h3 class="unit-name">Missile Marine</h3>
                         <div class="unit-type">Infantry</div>
@@ -554,7 +1095,7 @@
                 </a>
                 
                 <a href="smarine.html" class="unit-card" data-type="Infantry" data-name="S-Marine">
-                    <div class="unit-image" style="background-image: url('images/smarine.png');"></div>
+                    <div class="unit-image" style="background-image: url('images/smarine.svg');"></div>
                     <div class="unit-info">
                         <h3 class="unit-name">S-Marine</h3>
                         <div class="unit-type">Infantry</div>
@@ -578,7 +1119,7 @@
                 </a>
                 
                 <a href="meditec.html" class="unit-card" data-type="Infantry" data-name="Meditec">
-                    <div class="unit-image" style="background-image: url('images/meditec.png');"></div>
+                    <div class="unit-image" style="background-image: url('images/meditec.svg');"></div>
                     <div class="unit-info">
                         <h3 class="unit-name">Meditec</h3>
                         <div class="unit-type">Infantry</div>
@@ -754,25 +1295,6 @@
                 </div>
             </div>
 
-            <div class="category-legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--category-deployment);"></div>
-                    <span>Deployment</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--category-resource);"></div>
-                    <span>Resource</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--category-weapons);"></div>
-                    <span>Weapons</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--category-hybrid);"></div>
-                    <span>Hybrid</span>
-                </div>
-            </div>
-
             <div class="units-grid" id="structures-grid">
                 <a href="outpost.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Outpost">
                     <div class="unit-image" style="background-image: url('images/outpost.png');"></div>
@@ -894,13 +1416,69 @@
                     </div>
                 </a>
                 
-                <a href="terminal.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Terminal">
-                    <div class="unit-image" style="background-image: url('images/terminal.png');"></div>
+                <a href="aerodrome.html" class="unit-card" data-type="Unit Deployment Structure" data-name="Aerodrome">
+                    <div class="unit-image" style="background-image: url('images/aerodrome.png');"></div>
                     <div class="unit-info">
-                        <h3 class="unit-name">Terminal</h3>
+                        <h3 class="unit-name">Aerodrome</h3>
                         <div class="unit-type">Unit Deployment Structure</div>
                     </div>
                 </a>
+            </div>
+        </section>
+        
+        <section id="governments">
+            <div class="section-header">
+                <h2 class="section-title">Governments</h2>
+            </div>
+
+            <div class="governments-grid" id="governments-grid">
+                <div class="government-card industrial">
+                    <div class="government-image" style="background-image: url('images/Money.png');"></div>
+                    <div class="government-info">
+                        <h3 class="government-name">Capitalist</h3>
+                        <p class="government-description">Capitalist description placeholder</p>
+                        <div class="government-perks">
+                            <div class="government-perks-title">Government Perks</div>
+                            <p class="government-perks-text">+15% faster resource generation.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="government-card scientific">
+                    <div class="government-image" style="background-image: url('images/Manpower.png');"></div>
+                    <div class="government-info">
+                        <h3 class="government-name">Communist</h3>
+                        <p class="government-description">Communist description placeholder</p>
+                        <div class="government-perks">
+                            <div class="government-perks-title">Government Perks</div>
+                            <p class="government-perks-text">Every kill gives you a 50/50 chance of money or influence.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="government-card military">
+                    <div class="government-image" style="background-image: url('images/Energy.png');"></div>
+                    <div class="government-info">
+                        <h3 class="government-name">Fascist</h3>
+                        <p class="government-description">Fascist description placeholder</p>
+                        <div class="government-perks">
+                            <div class="government-perks-title">Government Perks</div>
+                            <p class="government-perks-text">Upgrading structures or building units is 35% faster. Wait time is capped at 4 seconds.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="government-card diplomatic">
+                    <div class="government-image" style="background-image: url('images/Influence.png');"></div>
+                    <div class="government-info">
+                        <h3 class="government-name">Monarchy</h3>
+                        <p class="government-description">Monarchy description placeholder</p>
+                        <div class="government-perks">
+                            <div class="government-perks-title">Government Perks</div>
+                            <p class="government-perks-text">Passively generate 3 influence every 5 seconds.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
